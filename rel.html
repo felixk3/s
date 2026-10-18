@@ -1,0 +1,284 @@
+<!doctype html><html lang="pt"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Khoza Sec XSS — Relatório</title>
+<style>
+ :root{--bg:#0f1419;--card:#1a212b;--txt:#e6edf3;--dim:#8b98a5;--line:#2d3742;
+   --crit:#ff5c5c;--alta:#ff8a5c;--media:#ffce54;--baixa:#5ca8ff;--info:#8b98a5;--ok:#3fb950;}
+ *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--txt);
+   font:15px/1.6 system-ui,Segoe UI,Roboto,sans-serif;padding:24px;max-width:1000px;margin:auto}
+ h1{font-size:22px;margin:0 0 4px} h2{font-size:17px;border-bottom:1px solid var(--line);
+   padding-bottom:6px;margin-top:32px}
+ .sub{color:var(--dim);font-size:13px}
+ .kpis{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}
+ .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;min-width:120px}
+ .kpi b{font-size:22px;display:block}
+ .card{background:var(--card);border:1px solid var(--line);border-left-width:4px;
+   border-radius:10px;padding:16px;margin:14px 0}
+ .Critica{border-left-color:var(--crit)} .Alta{border-left-color:var(--alta)}
+ .Media{border-left-color:var(--media)} .Baixa{border-left-color:var(--baixa)}
+ .Informativa{border-left-color:var(--info)}
+ .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700}
+ .t-Critica{background:var(--crit);color:#1a0000} .t-Alta{background:var(--alta);color:#1a0a00}
+ .t-Media{background:var(--media);color:#1a1500} .t-Baixa{background:var(--baixa);color:#001022}
+ .t-Informativa{background:var(--info);color:#0a0f14}
+ code,pre{background:#0b0f14;border:1px solid var(--line);border-radius:6px;padding:2px 6px;
+   font-family:ui-monospace,Menlo,monospace;font-size:13px;overflow:auto}
+ pre{padding:10px;white-space:pre-wrap;word-break:break-word}
+ .meta{color:var(--dim);font-size:13px} table{border-collapse:collapse;width:100%}
+ td,th{border:1px solid var(--line);padding:8px;text-align:left;font-size:13px}
+ .exec-sim{color:var(--crit);font-weight:700} .exec-nao{color:var(--dim)}
+ .foot{color:var(--dim);font-size:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:12px}
+</style></head><body>
+<h1>Khoza Sec XSS — Relatório de Segurança</h1>
+<div class="sub">Alvo: https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/ &nbsp;·&nbsp; 2026-10-18T16:24:09 → 2026-10-18T16:26:57 &nbsp;·&nbsp;
+ Modo: confirmação headless</div><div class="kpis">
+ <div class="kpi"><b>9</b>falhas XSS</div>
+ <div class="kpi"><b>0</b>alta/crítica</div>
+ <div class="kpi"><b>10</b>pontos testados</div>
+ <div class="kpi"><b>0</b>cookies</div></div><h2>Vulnerabilidades XSS</h2><div class="card Media">
+ <span class="tag t-Media">Média · 4.5/10</span>
+ &nbsp;<b>XSS dom</b>
+ <table>
+  <tr><th>URL</th><td><code>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/</code></td></tr>
+  <tr><th>Método</th><td>GET</td></tr>
+  <tr><th>Parâmetro</th><td><code>(DOM via #fragmento)</code></td></tr>
+  <tr><th>Contexto</th><td>js_bloco</td></tr>
+  <tr><th>Executa</th><td><span class="exec-nao">não executou no navegador</span></td></tr>
+  
+ </table>
+ <p><b>Como foi encontrada:</b> O valor cai diretamente num bloco &lt;script&gt;, fora de string. Corre como código.
+  Dados controláveis pelo utilizador (location.search, location.href, location.pathname, location) chegam a um sumidouro perigoso (setTimeout, setInterval) no JavaScript da página.</p>
+ <p><b>Prova (trecho da resposta):</b></p><pre>fontes: location.search, location.href, location.pathname, location | sumidouros: setTimeout, setInterval</pre>
+ <p><b>Payload de prova:</b></p><pre>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/#&lt;img src=x onerror=window.tokfhszpam3=1&gt;</pre>
+ <p><b>Impacto:</b> Um atacante cria um pedido/link com o payload e leva a vítima a abri-lo (ou,
+no caso armazenado, basta a vítima ver a página). O código corre no domínio
+confiável da aplicação, com a sessão da vítima, e pode: ler o cookie de
+sessão se não tiver HttpOnly, agir em nome da vítima, registar o que ela
+escreve ou redirecioná-la. Por isso o XSS ataca cada utilizador que confia
+na aplicação. Esta ferramenta prova a falha com um marcador inofensivo — não
+rouba dados.</p>
+ <p><b>Correção:</b></p><pre>XSS baseado em DOM ocorre no próprio JavaScript do lado do cliente.
+Evite passar dados controláveis (location.hash/search, document.URL,
+window.name) para sumidouros perigosos (innerHTML, document.write, eval).
+Use APIs seguras: textContent em vez de innerHTML; para HTML necessário,
+sanitize com DOMPurify. Ative Trusted Types quando possível.</pre>
+</div><div class="card Media">
+ <span class="tag t-Media">Média · 4.5/10</span>
+ &nbsp;<b>XSS dom</b>
+ <table>
+  <tr><th>URL</th><td><code>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/home</code></td></tr>
+  <tr><th>Método</th><td>GET</td></tr>
+  <tr><th>Parâmetro</th><td><code>(DOM via #fragmento)</code></td></tr>
+  <tr><th>Contexto</th><td>js_bloco</td></tr>
+  <tr><th>Executa</th><td><span class="exec-nao">não executou no navegador</span></td></tr>
+  
+ </table>
+ <p><b>Como foi encontrada:</b> O valor cai diretamente num bloco &lt;script&gt;, fora de string. Corre como código.
+  Dados controláveis pelo utilizador (location.search, location.href, location.pathname, location) chegam a um sumidouro perigoso (setTimeout, setInterval) no JavaScript da página.</p>
+ <p><b>Prova (trecho da resposta):</b></p><pre>fontes: location.search, location.href, location.pathname, location | sumidouros: setTimeout, setInterval</pre>
+ <p><b>Payload de prova:</b></p><pre>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/home#&lt;img src=x onerror=window.tokuljz39gz=1&gt;</pre>
+ <p><b>Impacto:</b> Um atacante cria um pedido/link com o payload e leva a vítima a abri-lo (ou,
+no caso armazenado, basta a vítima ver a página). O código corre no domínio
+confiável da aplicação, com a sessão da vítima, e pode: ler o cookie de
+sessão se não tiver HttpOnly, agir em nome da vítima, registar o que ela
+escreve ou redirecioná-la. Por isso o XSS ataca cada utilizador que confia
+na aplicação. Esta ferramenta prova a falha com um marcador inofensivo — não
+rouba dados.</p>
+ <p><b>Correção:</b></p><pre>XSS baseado em DOM ocorre no próprio JavaScript do lado do cliente.
+Evite passar dados controláveis (location.hash/search, document.URL,
+window.name) para sumidouros perigosos (innerHTML, document.write, eval).
+Use APIs seguras: textContent em vez de innerHTML; para HTML necessário,
+sanitize com DOMPurify. Ative Trusted Types quando possível.</pre>
+</div><div class="card Media">
+ <span class="tag t-Media">Média · 4.5/10</span>
+ &nbsp;<b>XSS dom</b>
+ <table>
+  <tr><th>URL</th><td><code>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/legal/privacy-policy</code></td></tr>
+  <tr><th>Método</th><td>GET</td></tr>
+  <tr><th>Parâmetro</th><td><code>(DOM via #fragmento)</code></td></tr>
+  <tr><th>Contexto</th><td>js_bloco</td></tr>
+  <tr><th>Executa</th><td><span class="exec-nao">não executou no navegador</span></td></tr>
+  
+ </table>
+ <p><b>Como foi encontrada:</b> O valor cai diretamente num bloco &lt;script&gt;, fora de string. Corre como código.
+  Dados controláveis pelo utilizador (location.search, location.href, location.pathname, location) chegam a um sumidouro perigoso (setTimeout, setInterval) no JavaScript da página.</p>
+ <p><b>Prova (trecho da resposta):</b></p><pre>fontes: location.search, location.href, location.pathname, location | sumidouros: setTimeout, setInterval</pre>
+ <p><b>Payload de prova:</b></p><pre>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/legal/privacy-policy#&lt;img src=x onerror=window.tokb368d6ik=1&gt;</pre>
+ <p><b>Impacto:</b> Um atacante cria um pedido/link com o payload e leva a vítima a abri-lo (ou,
+no caso armazenado, basta a vítima ver a página). O código corre no domínio
+confiável da aplicação, com a sessão da vítima, e pode: ler o cookie de
+sessão se não tiver HttpOnly, agir em nome da vítima, registar o que ela
+escreve ou redirecioná-la. Por isso o XSS ataca cada utilizador que confia
+na aplicação. Esta ferramenta prova a falha com um marcador inofensivo — não
+rouba dados.</p>
+ <p><b>Correção:</b></p><pre>XSS baseado em DOM ocorre no próprio JavaScript do lado do cliente.
+Evite passar dados controláveis (location.hash/search, document.URL,
+window.name) para sumidouros perigosos (innerHTML, document.write, eval).
+Use APIs seguras: textContent em vez de innerHTML; para HTML necessário,
+sanitize com DOMPurify. Ative Trusted Types quando possível.</pre>
+</div><div class="card Media">
+ <span class="tag t-Media">Média · 4.5/10</span>
+ &nbsp;<b>XSS dom</b>
+ <table>
+  <tr><th>URL</th><td><code>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/legal/terms</code></td></tr>
+  <tr><th>Método</th><td>GET</td></tr>
+  <tr><th>Parâmetro</th><td><code>(DOM via #fragmento)</code></td></tr>
+  <tr><th>Contexto</th><td>js_bloco</td></tr>
+  <tr><th>Executa</th><td><span class="exec-nao">não executou no navegador</span></td></tr>
+  
+ </table>
+ <p><b>Como foi encontrada:</b> O valor cai diretamente num bloco &lt;script&gt;, fora de string. Corre como código.
+  Dados controláveis pelo utilizador (location.search, location.href, location.pathname, location) chegam a um sumidouro perigoso (setTimeout, setInterval) no JavaScript da página.</p>
+ <p><b>Prova (trecho da resposta):</b></p><pre>fontes: location.search, location.href, location.pathname, location | sumidouros: setTimeout, setInterval</pre>
+ <p><b>Payload de prova:</b></p><pre>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/legal/terms#&lt;img src=x onerror=window.tokmz100vwf=1&gt;</pre>
+ <p><b>Impacto:</b> Um atacante cria um pedido/link com o payload e leva a vítima a abri-lo (ou,
+no caso armazenado, basta a vítima ver a página). O código corre no domínio
+confiável da aplicação, com a sessão da vítima, e pode: ler o cookie de
+sessão se não tiver HttpOnly, agir em nome da vítima, registar o que ela
+escreve ou redirecioná-la. Por isso o XSS ataca cada utilizador que confia
+na aplicação. Esta ferramenta prova a falha com um marcador inofensivo — não
+rouba dados.</p>
+ <p><b>Correção:</b></p><pre>XSS baseado em DOM ocorre no próprio JavaScript do lado do cliente.
+Evite passar dados controláveis (location.hash/search, document.URL,
+window.name) para sumidouros perigosos (innerHTML, document.write, eval).
+Use APIs seguras: textContent em vez de innerHTML; para HTML necessário,
+sanitize com DOMPurify. Ative Trusted Types quando possível.</pre>
+</div><div class="card Media">
+ <span class="tag t-Media">Média · 4.5/10</span>
+ &nbsp;<b>XSS dom</b>
+ <table>
+  <tr><th>URL</th><td><code>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Ffront-khoza-shop-git-main-khoza53s-projects.vercel.app%252F%26nonce%3D38c285a8e5e5a28614b121b9595724954e5321c6621a559db62aa8a4cf720a3e</code></td></tr>
+  <tr><th>Método</th><td>GET</td></tr>
+  <tr><th>Parâmetro</th><td><code>(DOM via #fragmento)</code></td></tr>
+  <tr><th>Contexto</th><td>js_bloco</td></tr>
+  <tr><th>Executa</th><td><span class="exec-nao">não executou no navegador</span></td></tr>
+  
+ </table>
+ <p><b>Como foi encontrada:</b> O valor cai diretamente num bloco &lt;script&gt;, fora de string. Corre como código.
+  Dados controláveis pelo utilizador (location.search, location.href, location.pathname, location) chegam a um sumidouro perigoso (setTimeout, setInterval) no JavaScript da página.</p>
+ <p><b>Prova (trecho da resposta):</b></p><pre>fontes: location.search, location.href, location.pathname, location | sumidouros: setTimeout, setInterval</pre>
+ <p><b>Payload de prova:</b></p><pre>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Ffront-khoza-shop-git-main-khoza53s-projects.vercel.app%252F%26nonce%3D38c285a8e5e5a28614b121b9595724954e5321c6621a559db62aa8a4cf720a3e#&lt;img src=x onerror=window.tokwmqmfnkj=1&gt;</pre>
+ <p><b>Impacto:</b> Um atacante cria um pedido/link com o payload e leva a vítima a abri-lo (ou,
+no caso armazenado, basta a vítima ver a página). O código corre no domínio
+confiável da aplicação, com a sessão da vítima, e pode: ler o cookie de
+sessão se não tiver HttpOnly, agir em nome da vítima, registar o que ela
+escreve ou redirecioná-la. Por isso o XSS ataca cada utilizador que confia
+na aplicação. Esta ferramenta prova a falha com um marcador inofensivo — não
+rouba dados.</p>
+ <p><b>Correção:</b></p><pre>XSS baseado em DOM ocorre no próprio JavaScript do lado do cliente.
+Evite passar dados controláveis (location.hash/search, document.URL,
+window.name) para sumidouros perigosos (innerHTML, document.write, eval).
+Use APIs seguras: textContent em vez de innerHTML; para HTML necessário,
+sanitize com DOMPurify. Ative Trusted Types quando possível.</pre>
+</div><div class="card Media">
+ <span class="tag t-Media">Média · 4.5/10</span>
+ &nbsp;<b>XSS dom</b>
+ <table>
+  <tr><th>URL</th><td><code>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Ffront-khoza-shop-git-main-khoza53s-projects.vercel.app%252Fhome%26nonce%3D38c285a8e5e5a28614b121b9595724954e5321c6621a559db62aa8a4cf720a3e</code></td></tr>
+  <tr><th>Método</th><td>GET</td></tr>
+  <tr><th>Parâmetro</th><td><code>(DOM via #fragmento)</code></td></tr>
+  <tr><th>Contexto</th><td>js_bloco</td></tr>
+  <tr><th>Executa</th><td><span class="exec-nao">não executou no navegador</span></td></tr>
+  
+ </table>
+ <p><b>Como foi encontrada:</b> O valor cai diretamente num bloco &lt;script&gt;, fora de string. Corre como código.
+  Dados controláveis pelo utilizador (location.search, location.href, location.pathname, location) chegam a um sumidouro perigoso (setTimeout, setInterval) no JavaScript da página.</p>
+ <p><b>Prova (trecho da resposta):</b></p><pre>fontes: location.search, location.href, location.pathname, location | sumidouros: setTimeout, setInterval</pre>
+ <p><b>Payload de prova:</b></p><pre>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Ffront-khoza-shop-git-main-khoza53s-projects.vercel.app%252Fhome%26nonce%3D38c285a8e5e5a28614b121b9595724954e5321c6621a559db62aa8a4cf720a3e#&lt;img src=x onerror=window.tokemhph3qo=1&gt;</pre>
+ <p><b>Impacto:</b> Um atacante cria um pedido/link com o payload e leva a vítima a abri-lo (ou,
+no caso armazenado, basta a vítima ver a página). O código corre no domínio
+confiável da aplicação, com a sessão da vítima, e pode: ler o cookie de
+sessão se não tiver HttpOnly, agir em nome da vítima, registar o que ela
+escreve ou redirecioná-la. Por isso o XSS ataca cada utilizador que confia
+na aplicação. Esta ferramenta prova a falha com um marcador inofensivo — não
+rouba dados.</p>
+ <p><b>Correção:</b></p><pre>XSS baseado em DOM ocorre no próprio JavaScript do lado do cliente.
+Evite passar dados controláveis (location.hash/search, document.URL,
+window.name) para sumidouros perigosos (innerHTML, document.write, eval).
+Use APIs seguras: textContent em vez de innerHTML; para HTML necessário,
+sanitize com DOMPurify. Ative Trusted Types quando possível.</pre>
+</div><div class="card Media">
+ <span class="tag t-Media">Média · 4.5/10</span>
+ &nbsp;<b>XSS dom</b>
+ <table>
+  <tr><th>URL</th><td><code>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Ffront-khoza-shop-git-main-khoza53s-projects.vercel.app%252Flegal%252Fprivacy-policy%26nonce%3D38c285a8e5e5a28614b121b9595724954e5321c6621a559db62aa8a4cf720a3e</code></td></tr>
+  <tr><th>Método</th><td>GET</td></tr>
+  <tr><th>Parâmetro</th><td><code>(DOM via #fragmento)</code></td></tr>
+  <tr><th>Contexto</th><td>js_bloco</td></tr>
+  <tr><th>Executa</th><td><span class="exec-nao">não executou no navegador</span></td></tr>
+  
+ </table>
+ <p><b>Como foi encontrada:</b> O valor cai diretamente num bloco &lt;script&gt;, fora de string. Corre como código.
+  Dados controláveis pelo utilizador (location.search, location.href, location.pathname, location) chegam a um sumidouro perigoso (setTimeout, setInterval) no JavaScript da página.</p>
+ <p><b>Prova (trecho da resposta):</b></p><pre>fontes: location.search, location.href, location.pathname, location | sumidouros: setTimeout, setInterval</pre>
+ <p><b>Payload de prova:</b></p><pre>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Ffront-khoza-shop-git-main-khoza53s-projects.vercel.app%252Flegal%252Fprivacy-policy%26nonce%3D38c285a8e5e5a28614b121b9595724954e5321c6621a559db62aa8a4cf720a3e#&lt;img src=x onerror=window.tokifnlkrjo=1&gt;</pre>
+ <p><b>Impacto:</b> Um atacante cria um pedido/link com o payload e leva a vítima a abri-lo (ou,
+no caso armazenado, basta a vítima ver a página). O código corre no domínio
+confiável da aplicação, com a sessão da vítima, e pode: ler o cookie de
+sessão se não tiver HttpOnly, agir em nome da vítima, registar o que ela
+escreve ou redirecioná-la. Por isso o XSS ataca cada utilizador que confia
+na aplicação. Esta ferramenta prova a falha com um marcador inofensivo — não
+rouba dados.</p>
+ <p><b>Correção:</b></p><pre>XSS baseado em DOM ocorre no próprio JavaScript do lado do cliente.
+Evite passar dados controláveis (location.hash/search, document.URL,
+window.name) para sumidouros perigosos (innerHTML, document.write, eval).
+Use APIs seguras: textContent em vez de innerHTML; para HTML necessário,
+sanitize com DOMPurify. Ative Trusted Types quando possível.</pre>
+</div><div class="card Media">
+ <span class="tag t-Media">Média · 4.5/10</span>
+ &nbsp;<b>XSS dom</b>
+ <table>
+  <tr><th>URL</th><td><code>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Ffront-khoza-shop-git-main-khoza53s-projects.vercel.app%252Flegal%252Fterms%26nonce%3D38c285a8e5e5a28614b121b9595724954e5321c6621a559db62aa8a4cf720a3e</code></td></tr>
+  <tr><th>Método</th><td>GET</td></tr>
+  <tr><th>Parâmetro</th><td><code>(DOM via #fragmento)</code></td></tr>
+  <tr><th>Contexto</th><td>js_bloco</td></tr>
+  <tr><th>Executa</th><td><span class="exec-nao">não executou no navegador</span></td></tr>
+  
+ </table>
+ <p><b>Como foi encontrada:</b> O valor cai diretamente num bloco &lt;script&gt;, fora de string. Corre como código.
+  Dados controláveis pelo utilizador (location.search, location.href, location.pathname, location) chegam a um sumidouro perigoso (setTimeout, setInterval) no JavaScript da página.</p>
+ <p><b>Prova (trecho da resposta):</b></p><pre>fontes: location.search, location.href, location.pathname, location | sumidouros: setTimeout, setInterval</pre>
+ <p><b>Payload de prova:</b></p><pre>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Ffront-khoza-shop-git-main-khoza53s-projects.vercel.app%252Flegal%252Fterms%26nonce%3D38c285a8e5e5a28614b121b9595724954e5321c6621a559db62aa8a4cf720a3e#&lt;img src=x onerror=window.tok96innbem=1&gt;</pre>
+ <p><b>Impacto:</b> Um atacante cria um pedido/link com o payload e leva a vítima a abri-lo (ou,
+no caso armazenado, basta a vítima ver a página). O código corre no domínio
+confiável da aplicação, com a sessão da vítima, e pode: ler o cookie de
+sessão se não tiver HttpOnly, agir em nome da vítima, registar o que ela
+escreve ou redirecioná-la. Por isso o XSS ataca cada utilizador que confia
+na aplicação. Esta ferramenta prova a falha com um marcador inofensivo — não
+rouba dados.</p>
+ <p><b>Correção:</b></p><pre>XSS baseado em DOM ocorre no próprio JavaScript do lado do cliente.
+Evite passar dados controláveis (location.hash/search, document.URL,
+window.name) para sumidouros perigosos (innerHTML, document.write, eval).
+Use APIs seguras: textContent em vez de innerHTML; para HTML necessário,
+sanitize com DOMPurify. Ative Trusted Types quando possível.</pre>
+</div><div class="card Media">
+ <span class="tag t-Media">Média · 4.5/10</span>
+ &nbsp;<b>XSS dom</b>
+ <table>
+  <tr><th>URL</th><td><code>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Ffront-khoza-shop-git-main-khoza53s-projects.vercel.app%252Fsignup%253Fnext%253D%25252Fsso-api%25253Furl%25253Dhttps%2525253A%2525252F%2525252Ffront-khoza-shop-git-main-khoza53s-projects.vercel.app%2525252F%252526nonce%25253D38c285a8e5e5a28614b121b9595724954e5321c6621a559db62aa8a4cf720a3e%26nonce%3D38c285a8e5e5a28614b121b9595724954e5321c6621a559db62aa8a4cf720a3e</code></td></tr>
+  <tr><th>Método</th><td>GET</td></tr>
+  <tr><th>Parâmetro</th><td><code>(DOM via #fragmento)</code></td></tr>
+  <tr><th>Contexto</th><td>js_bloco</td></tr>
+  <tr><th>Executa</th><td><span class="exec-nao">não executou no navegador</span></td></tr>
+  
+ </table>
+ <p><b>Como foi encontrada:</b> O valor cai diretamente num bloco &lt;script&gt;, fora de string. Corre como código.
+  Dados controláveis pelo utilizador (location.search, location.href, location.pathname, location) chegam a um sumidouro perigoso (setTimeout, setInterval) no JavaScript da página.</p>
+ <p><b>Prova (trecho da resposta):</b></p><pre>fontes: location.search, location.href, location.pathname, location | sumidouros: setTimeout, setInterval</pre>
+ <p><b>Payload de prova:</b></p><pre>https://front-khoza-shop-git-main-khoza53s-projects.vercel.app/signup?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Ffront-khoza-shop-git-main-khoza53s-projects.vercel.app%252Fsignup%253Fnext%253D%25252Fsso-api%25253Furl%25253Dhttps%2525253A%2525252F%2525252Ffront-khoza-shop-git-main-khoza53s-projects.vercel.app%2525252F%252526nonce%25253D38c285a8e5e5a28614b121b9595724954e5321c6621a559db62aa8a4cf720a3e%26nonce%3D38c285a8e5e5a28614b121b9595724954e5321c6621a559db62aa8a4cf720a3e#&lt;img src=x onerror=window.tokbouailec=1&gt;</pre>
+ <p><b>Impacto:</b> Um atacante cria um pedido/link com o payload e leva a vítima a abri-lo (ou,
+no caso armazenado, basta a vítima ver a página). O código corre no domínio
+confiável da aplicação, com a sessão da vítima, e pode: ler o cookie de
+sessão se não tiver HttpOnly, agir em nome da vítima, registar o que ela
+escreve ou redirecioná-la. Por isso o XSS ataca cada utilizador que confia
+na aplicação. Esta ferramenta prova a falha com um marcador inofensivo — não
+rouba dados.</p>
+ <p><b>Correção:</b></p><pre>XSS baseado em DOM ocorre no próprio JavaScript do lado do cliente.
+Evite passar dados controláveis (location.hash/search, document.URL,
+window.name) para sumidouros perigosos (innerHTML, document.write, eval).
+Use APIs seguras: textContent em vez de innerHTML; para HTML necessário,
+sanitize com DOMPurify. Ative Trusted Types quando possível.</pre>
+</div><h2>Segurança de cookies</h2><p>Nenhum cookie definido na resposta analisada.</p><div class="foot">Gerado por Khoza Sec XSS v2.0 — ferramenta
+     de teste de segurança para uso autorizado. Os payloads usados são inofensivos
+     (apenas provam execução). Não reproduza falhas fora do âmbito autorizado.</div>
+    </body></html>

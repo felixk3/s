@@ -1,0 +1,5 @@
+requests>=2.25
+beautifulsoup4>=4.9
+# Opcional, mas RECOMENDADO (confirmação de execução real / menos falsos positivos):
+playwright>=1.40
+# Após instalar o playwright, correr uma vez:  python3 -m playwright install chromium
